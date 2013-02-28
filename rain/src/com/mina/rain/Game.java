@@ -1,10 +1,16 @@
 package com.mina.rain;
 
 import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 
 import javax.swing.JFrame;
+
+import com.mina.rain.graphics.Screen;
 
 public class Game extends Canvas implements Runnable{
 //for windows 
@@ -15,11 +21,17 @@ public class Game extends Canvas implements Runnable{
 	public static int scale = 3; 
 	private boolean running= false;
 	private Thread thread;
+	Screen screen;
 	private JFrame frame;
-	
+	//bufferimage
+	 
+	private BufferedImage image= new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+	// retern data of a image in a raster
+	private int[] pixels=((DataBufferInt)image.getRaster().getDataBuffer()).getData();
 	public Game(){
 		Dimension size= new Dimension(width*scale, height*scale);
 		setPreferredSize(size);
+		 screen = new Screen(width, height);
 		frame= new JFrame();
 	}
 	
@@ -54,8 +66,26 @@ public class Game extends Canvas implements Runnable{
 		// TODO Auto-generated method stub
 		BufferStrategy bs= getBufferStrategy();
 		if(bs==null){
+			 createBufferStrategy(3);
+			 return;
+			}
+		screen.render();
+		for (int i=0; i< pixels.length;i++)
+			pixels[i]= screen.pixels[i];
+		
+		
+		Graphics g= bs.getDrawGraphics();
+		{
+			//all graphics to be displayed. show buffers
+		   // buffer swapping.
+			g.setColor(Color.BLACK);
 			
-		}
+			g.fillRect(0, 0, getWidth(), getHeight());
+		    g.drawImage( image, 0, 0, getWidth(), getHeight(),null);
+			bs.show();
+			}
+		//release resources after showing each graphics
+		g.dispose();
 	}
 
 	public void update() {
